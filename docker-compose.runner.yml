@@ -6,8 +6,9 @@ services:
       context: .
       dockerfile: Dockerfile.runner
     container_name: mise-gcc-runner
+    env_file:
+      - .env
     environment:
-      - GITHUB_TOKEN=${GITHUB_TOKEN}
       - GITHUB_REPO=jotoft/mise-gcc
       - RUNNER_NAME=debian-bullseye-runner
       - RUNNER_LABELS=self-hosted,debian,glibc-2.31,fast

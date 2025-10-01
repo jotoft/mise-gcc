@@ -16,14 +16,16 @@ This directory contains configuration for running a self-hosted GitHub Actions r
 ## Setup
 
 1. **Create a GitHub Personal Access Token**:
-   - Go to: https://github.com/settings/tokens
-   - Click "Generate new token (classic)"
-   - Select scope: `repo` (full control of private repositories)
-   - Copy the token
+   - Go to: https://github.com/settings/tokens?type=beta
+   - Click "Generate new token"
+   - Set **Repository access**: Only select repositories → jotoft/mise-gcc
+   - Set **Repository permissions** → **Administration**: Read and write
+   - Generate and copy the token
 
-2. **Set environment variable**:
+2. **Create .env file**:
    ```bash
-   export GITHUB_TOKEN=ghp_your_token_here
+   cp .env.example .env
+   # Edit .env and add your token
    ```
 
 3. **Build and start the runner**:

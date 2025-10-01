@@ -21,6 +21,9 @@ RUN apt-get update && apt-get install -y \
 # Create a user for the runner
 RUN useradd -m -s /bin/bash runner
 
+# Create work directory with proper permissions before switching user
+RUN mkdir -p /home/runner/_work && chown -R runner:runner /home/runner/_work
+
 # Switch to runner user
 USER runner
 WORKDIR /home/runner
