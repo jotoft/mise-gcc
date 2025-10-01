@@ -1,0 +1,39 @@
+#!/bin/bash
+#MISE description="Check the size of GCC version tarballs"
+#MISE arg "version" help="GCC version to check (if not specified, shows all)"
+
+set -e
+
+check_version() {
+    local ver=$1
+    local url="https://mirror.koddos.net/gcc/releases/gcc-${ver}/gcc-${ver}.tar.xz"
+
+    local size_bytes=$(curl -sI "${url}" | grep -i content-length | awk '{print $2}' | tr -d '\r')
+
+    if [ -n "$size_bytes" ]; then
+        local size_mb=$((size_bytes / 1024 / 1024))
+        printf "%-15s %4s MB\n" "gcc-${ver}" "${size_mb}"
+    fi
+}
+
+if [ -n "$version" ]; then
+    # Check specific version
+    echo "Checking GCC ${version}..."
+    check_version "$version"
+else
+    # List all versions
+    echo "Fetching available GCC versions and sizes..."
+    echo ""
+
+    versions=$(curl -s https://mirror.koddos.net/gcc/releases/ | \
+               grep -o 'href="gcc-[^"]*/"' | \
+               sed 's/href="gcc-//' | \
+               sed 's/\/"$//' | \
+               grep '^[0-9]' | \
+               sort -V -r | \
+               head -20)
+
+    for ver in $versions; do
+        check_version "$ver"
+    done
+fi
