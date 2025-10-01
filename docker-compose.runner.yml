@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  github-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.runner
+    container_name: mise-gcc-runner
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_REPO=jotoft/mise-gcc
+      - RUNNER_NAME=debian-bullseye-runner
+      - RUNNER_LABELS=self-hosted,debian,glibc-2.31,fast
+    volumes:
+      - runner-work:/home/runner/_work
+    restart: unless-stopped
+
+volumes:
+  runner-work:

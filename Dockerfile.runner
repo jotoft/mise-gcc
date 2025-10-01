@@ -1,0 +1,40 @@
+# Debian 11 (Bullseye) has glibc 2.31, same as Ubuntu 20.04
+FROM debian:11-slim
+
+# Install required packages for GitHub Actions runner and GCC build
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    jq \
+    build-essential \
+    libgmp-dev \
+    libmpfr-dev \
+    libmpc-dev \
+    texinfo \
+    bison \
+    flex \
+    wget \
+    xz-utils \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a user for the runner
+RUN useradd -m -s /bin/bash runner
+
+# Switch to runner user
+USER runner
+WORKDIR /home/runner
+
+# Download and extract GitHub Actions runner
+# Version will be updated at build time
+ARG RUNNER_VERSION=2.321.0
+RUN curl -o actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz -L \
+    https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz \
+    && tar xzf actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz \
+    && rm actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz
+
+# The runner will be configured at runtime with a startup script
+COPY --chown=runner:runner start-runner.sh /home/runner/
+RUN chmod +x /home/runner/start-runner.sh
+
+ENTRYPOINT ["/home/runner/start-runner.sh"]

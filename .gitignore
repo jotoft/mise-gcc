@@ -1,0 +1,21 @@
+# GitHub Actions runner
+.runner
+.credentials
+.credentials_rsaparams
+
+# Build artifacts
+*.tar.gz
+*.tar.xz
+gcc-*/
+build/
+
+# Environment files
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

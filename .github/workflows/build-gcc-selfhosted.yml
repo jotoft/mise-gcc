@@ -1,0 +1,62 @@
+name: Build GCC (Self-Hosted)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'GCC version to build (e.g., 13.4.0)'
+        required: true
+        default: '13.4.0'
+      march:
+        description: 'Target architecture (x86-64, x86-64-v2, x86-64-v3, x86-64-v4)'
+        required: false
+        default: 'x86-64'
+
+jobs:
+  build:
+    runs-on: [self-hosted, debian, glibc-2.31]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Download GCC source
+      run: |
+        wget https://mirror.koddos.net/gcc/releases/gcc-${{ inputs.version }}/gcc-${{ inputs.version }}.tar.xz
+        tar xf gcc-${{ inputs.version }}.tar.xz
+
+    - name: Download prerequisites
+      working-directory: gcc-${{ inputs.version }}
+      run: ./contrib/download_prerequisites
+
+    - name: Configure GCC
+      run: |
+        mkdir build
+        cd build
+        ../gcc-${{ inputs.version }}/configure \
+          --prefix=$PWD/install \
+          --enable-languages=c,c++ \
+          --disable-multilib \
+          --disable-bootstrap \
+          CFLAGS="-march=${{ inputs.march }}" \
+          CXXFLAGS="-march=${{ inputs.march }}"
+
+    - name: Build GCC
+      working-directory: build
+      run: make -j$(nproc)
+
+    - name: Install GCC
+      working-directory: build
+      run: make install
+
+    - name: Create tarball
+      run: |
+        cd build/install
+        tar czf ../../gcc-${{ inputs.version }}-${{ inputs.march }}-glibc2.31.tar.gz .
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: gcc-${{ inputs.version }}-${{ inputs.march }}-glibc2.31
+        path: gcc-${{ inputs.version }}-${{ inputs.march }}-glibc2.31.tar.gz
+        retention-days: 30
